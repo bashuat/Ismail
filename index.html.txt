@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة نرد الأبراج الذكية | اكتشف حظك اليوم</title>
+    <meta name="description" content="لعبة نرد الأبراج الذكية - اكتشف حظك اليوم من خلال برجك الفلكي وارمِ النرد لمعرفة توقعاتك">
+    <meta name="keywords" content="أبراج, نرد, حظ, فلك, لعبة, توقعات, برج">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.5/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+```
+    body {
+        font-family: 'Segoe UI', 'Cairo', 'Arial', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        min-height: 100vh;
+        animation: backgroundShift 10s ease-in-out infinite;
+    }
+    
+    @keyframes backgroundShift {
+        0%, 100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); }
+        50% { background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%); }
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(15px);
+        border-radius: 25px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(31, 38, 135, 0.5);
+    }
+    
+    .dice-container {
+        display: flex;
+        justify-content: center;
+        gap: 50px;
+        margin: 50px 0;
+        perspective: 1000px;
+    }
+    
+    .dice {
+        width: 120px;
+        height: 120px;
+        border-radius: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-rows: 1fr 1fr 1fr;
+        gap: 4px;
+        padding: 15px;
+        transition: all 0.4s ease;
+        position: relative;
+        box-shadow: 
+            inset 0 0 0 4px rgba(255,255,255,0.3),
+            0 10px 20px rgba(0,0,0,0.4),
+            0 6px 12px rgba(0,0,0,0.3);
+        background: linear-gradient(145deg, #ffffff, #f0f0f0);
+        border: 3px solid #ddd;
+        transform-style: preserve-3d;
+    }
+    
+    .dice-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #222;
+        opacity: 0;
+        transition: all 0.3s ease;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .dice-dot.active {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    
+    /* تخطيطات النقاط للأرقام */
+    .dice[data-value="1"] .dice-dot:nth-child(5) { opacity: 1; }
+    
+    .dice[data-value="2"] .dice-dot:nth-child(3),
+    .dice[data-value="2"] .dice-dot:nth-child(7) { opacity: 1; }
+    
+    .dice[data-value="3"] .dice-dot:nth-child(3),
+    .dice[data-value="3"] .dice-dot:nth-child(5),
+    .dice[data-value="3"] .dice-dot:nth-child(7) { opacity: 1; }
+    
+    .dice[data-value="4"] .dice-dot:nth-child(1),
+    .dice[data-value="4"] .dice-dot:nth-child(3),
+    .dice[data-value="4"] .dice-dot:nth-child(7),
+    .dice[data-value="4"] .dice-dot:nth-child(9) { opacity: 1; }
+    
+    .dice[data-value="5"] .dice-dot:nth-child(1),
+    .dice[data-value="5"] .dice-dot:nth-child(3),
+    .dice[data-value="5"] .dice-dot:nth-child(5),
+    .dice[data-value="5"] .dice-dot:nth-child(7),
+    .dice[data-value="5"] .dice-dot:nth-child(9) { opacity: 1; }
+    
+    .dice[data-value="6"] .dice-dot:nth-child(1),
+    .dice[data-value="6"] .dice-dot:nth-child(2),
+    .dice[data-value="6"] .dice-dot:nth-child(3),
+    .dice[data-value="6"] .dice-dot:nth-child(7),
+    .dice[data-value="6"] .dice-dot:nth-child(8),
+    .dice[data-value="6"] .dice-dot:nth-child(9) { opacity: 1; }
+    
+    .dice-1 { 
+        background: linear-gradient(145deg, #ff6b6b, #ee5a52);
+        border-color: #e74c3c;
+    }
+    
+    .dice-2 { 
+        background: linear-gradient(145deg, #4ecdc4, #45b7aa);
+        border-color: #3498db;
+    }
+    
+    .dice.rolling {
+        animation: roll3d 0.8s ease-in-out infinite;
+    }
+    
+    @keyframes roll3d {
+        0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+        25% { transform: rotateX(90deg) rotateY(0deg) rotateZ(90deg); }
+        50% { transform: rotateX(180deg) rotateY(90deg) rotateZ(180deg); }
+        75% { transform: rotateX(270deg) rotateY(180deg) rotateZ(270deg); }
+        100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+    }
+    
+    .btn {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 18px 35px;
+        border-radius: 25px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+        background: linear-gradient(45deg, #764ba2, #667eea);
+    }
+    
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .stage-selector {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin: 25px 0;
+        flex-wrap: wrap;
+    }
+    
+    .stage-btn {
+        padding: 12px 25px;
+        border-radius: 20px;
+        border: none;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: bold;
+        border: 2px solid transparent;
+    }
+    
+    .stage-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .stage-btn.active {
+        background: linear-gradient(45deg, #f39c12, #e67e22);
+        border-color: #d35400;
+        box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+    }
+    
+    .result {
+        text-align: center;
+        padding: 25px;
+        margin: 25px 0;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+        font-size: 22px;
+        font-weight: bold;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        animation: resultPulse 2s ease-in-out;
+    }
+    
+    @keyframes resultPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    
+    .player-info {
+        color: white;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .player-info h2 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .player-info p {
+        font-size: 1.3em;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    
+    .registration {
+        max-width: 450px;
+        margin: 0 auto;
+        padding-top: 8vh;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .form-group label {
+        display: block;
+        color: white;
+        margin-bottom: 12px;
+        font-weight: bold;
+        font-size: 1.1em;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 15px;
+        border-radius: 15px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        font-size: 16px;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #f39c12;
+        background: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 20px rgba(243, 156, 18, 0.3);
+    }
+    
+    .form-group input::placeholder {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .form-group select option {
+        background: #333;
+        color: white;
+        padding: 10px;
+    }
+    
+    .date-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 15px;
+    }
+    
+    .text-center {
+        text-align: center;
+    }
+    
+    .footer {
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(15px);
+        border-radius: 25px;
+        padding: 30px;
+        margin-top: 40px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .contact-info h4 {
+        color: #f39c12;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .contact-links {
+        display: flex;
+        justify-content: center;
+        gap: 25px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    
+    .contact-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: white;
+        text-decoration: none;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 15px 25px;
+        border-radius: 30px;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        font-weight: bold;
+    }
+    
+    .contact-link:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+    
+    .instagram-link {
+        background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+    }
+    
+    .instagram-link:hover {
+        background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);
+        filter: brightness(1.2);
+    }
+    
+    .email-link {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+    }
+    
+    .email-link:hover {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        filter: brightness(1.2);
+    }
+    
+    .designer-credit {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1em;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        line-height: 1.6;
+    }
+    
+    .logo-title {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .logo-title h1 {
+        font-size: 3em;
+        background: linear-gradient(45deg, #f39c12, #e67e22, #d35400);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .logo-title p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.4em;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    
+    /* تحسينات للهواتف المحمولة */
+    @media (max-width: 768px) {
+        .container {
+            padding: 15px;
+        }
+        
+        .dice-container {
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .dice {
+            width: 90px;
+            height: 90px;
+            padding: 10px;
+        }
+        
+        .dice-dot {
+            width: 10px;
+            height: 10px;
+        }
+        
+        .date-inputs {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        
+        .stage-selector {
+            gap: 10px;
+        }
+        
+        .stage-btn {
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+        
+        .contact-links {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .logo-title h1 {
+            font-size: 2.2em;
+        }
+    }
+</style>
+```
+
+</head>
+<body>
+    <div id="root"></div>
+
+```
+<script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const ZodiacDiceGame = () => {
+        const [player, setPlayer] = useState(null);
+        const [currentStage, setCurrentStage] = useState(1);
+        const [dice1, setDice1] = useState(1);
+        const [dice2, setDice2] = useState(1);
+        const [isRolling, setIsRolling] = useState(false);
+        const [gameResult, setGameResult] = useState('');
+        const [canPlay, setCanPlay] = useState(true);
+        const [nextPlayTime, setNextPlayTime] = useState(null);
+        const [showRegistration, setShowRegistration] = useState(true);
+
+        // حساب البرج من تاريخ الميلاد
+        const getZodiacSign = (day, month) => {
+            const zodiacSigns = [
+                { name: 'الجدي', start: [22, 12], end: [19, 1] },
+                { name: 'الدلو', start: [20, 1], end: [18, 2] },
+                { name: 'الحوت', start: [19, 2], end: [20, 3] },
+                { name: 'الحمل', start: [21, 3], end: [19, 4] },
+                { name: 'الثور', start: [20, 4], end: [20, 5] },
+                { name: 'الجوزاء', start: [21, 5], end: [20, 6] },
+                { name: 'السرطان', start: [21, 6], end: [22, 7] },
+                { name: 'الأسد', start: [23, 7], end: [22, 8] },
+                { name: 'العذراء', start: [23, 8], end: [22, 9] },
+                { name: 'الميزان', start: [23, 9], end: [22, 10] },
+                { name: 'العقرب', start: [23, 10], end: [21, 11] },
+                { name: 'القوس', start: [22, 11], end: [21, 12] }
+            ];
+
+            for (let sign of zodiacSigns) {
+                const [startDay, startMonth] = sign.start;
+                const [endDay, endMonth] = sign.end;
+                
+                if (startMonth === endMonth) {
+                    if (day >= startDay && day <= endDay && month === startMonth) {
+                        return sign.name;
+                    }
+                } else {
+                    if ((month === startMonth && day >= startDay) || 
+                        (month === endMonth && day <= endDay)) {
+                        return sign.name;
+                    }
+                }
+            }
+            return 'الجدي';
+        };
+
+        // حساب الحظ اليومي بناءً على البرج
+        const calculateDailyLuck = (zodiacSign) => {
+            const today = new Date();
+            const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+            
+            // قيم فلكية لكل برج
+            const zodiacValues = {
+                'الحمل': 3, 'الثور': 7, 'الجوزاء': 5, 'السرطان': 2,
+                'الأسد': 8, 'العذراء': 6, 'الميزان': 4, 'العقرب': 9,
+                'القوس': 1, 'الجدي': 10, 'الدلو': 11, 'الحوت': 12
+            };
+            
+            const baseValue = zodiacValues[zodiacSign] || 5;
+            const cycleValue = (dayOfYear + baseValue) % 100;
+            
+            // تحديد مستوى الحظ حسب الدورة الفلكية
+            if (cycleValue >= 85) return 'عالي جداً'; // 15% فرصة
+            if (cycleValue >= 70) return 'عالي';      // 15% فرصة  
+            if (cycleValue >= 40) return 'متوسط';     // 30% فرصة
+            return 'منخفض';                          // 40% فرصة
+        };
+
+        // تحديد نتيجة النرد بناءً على مستوى الحظ الفلكي
+        const generateDiceResult = (luckLevel) => {
+            const random = Math.random();
+            
+            switch (luckLevel) {
+                case 'عالي جداً':
+                    // فرصة عالية جداً للحصول على نتائج جيدة
+                    if (random < 0.30) return [6, 6]; // 30% فرصة للفوز الكبير
+                    if (random < 0.50) return [5, 5]; // 20% فرصة للفوز المتوسط
+                    break;
+                case 'عالي':
+                    // فرصة عالية للحصول على نتائج جيدة
+                    if (random < 0.15) return [6, 6]; // 15% فرصة للفوز الكبير
+                    if (random < 0.35) return [5, 5]; // 20% فرصة للفوز المتوسط
+                    break;
+                case 'متوسط':
+                    // فرصة متوسطة للحصول على نتائج جيدة
+                    if (random < 0.08) return [6, 6]; // 8% فرصة للفوز الكبير
+                    if (random < 0.25) return [5, 5]; // 17% فرصة للفوز المتوسط
+                    break;
+                case 'منخفض':
+                    // فرصة قليلة للحصول على نتائج جيدة
+                    if (random < 0.03) return [6, 6]; // 3% فرصة للفوز الكبير
+                    if (random < 0.10) return [5, 5]; // 7% فرصة للفوز المتوسط
+                    break;
+            }
+            
+            // نتيجة عشوائية للحالات الأخرى
+            return [
+                Math.floor(Math.random() * 6) + 1,
+                Math.floor(Math.random() * 6) + 1
+            ];
+        };
+
+        // تحديد وقت اللعب التالي حسب المرحلة
+        const getNextPlayTime = (stage) => {
+            const now = new Date();
+            switch (stage) {
+                case 1: // كل 5 دقائق
+                    return new Date(now.getTime() + 5 * 60 * 1000);
+                case 2: // كل ساعة
+                    return new Date(now.getTime() + 60 * 60 * 1000);
+                case 3: // كل يوم
+                    const tomorrow = new Date(now);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    tomorrow.setHours(0, 0, 0, 0);
+                    return tomorrow;
+                case 4: // كل شهر
+                    const nextMonth = new Date(now);
+                    nextMonth.setMonth(nextMonth.getMonth() + 1);
+                    nextMonth.setDate(1);
+                    nextMonth.setHours(0, 0, 0, 0);
+                    return nextMonth;
+                default:
+                    return new Date(now.getTime() + 5 * 60 * 1000);
+            }
+        };
+
+        // تسجيل لاعب جديد
+        const registerPlayer = (name, day, month, year) => {
+            const zodiacSign = getZodiacSign(parseInt(day), parseInt(month));
+            const newPlayer = {
+                name,
+                birthDate: { day: parseInt(day), month: parseInt(month), year: parseInt(year) },
+                zodiacSign,
+                registrationDate: new Date()
+            };
+            setPlayer(newPlayer);
+            setShowRegistration(false);
+        };
+
+        // دالة لعب النرد
+        const rollDice = () => {
+            if (!canPlay) return;
+            
+            setIsRolling(true);
+            setCanPlay(false);
+            
+            // تأثير الدوران العشوائي أثناء الرمي
+            const rollInterval = setInterval(() => {
+                setDice1(Math.floor(Math.random() * 6) + 1);
+                setDice2(Math.floor(Math.random() * 6) + 1);
+            }, 100);
+            
+            setTimeout(() => {
+                clearInterval(rollInterval);
+                
+                // حساب النتيجة النهائية بناءً على الحظ الفلكي
+                const luckLevel = calculateDailyLuck(player.zodiacSign);
+                const [finalDice1, finalDice2] = generateDiceResult(luckLevel);
+                
+                setDice1(finalDice1);
+                setDice2(finalDice2);
+                setIsRolling(false);
+                
+                // تحديد رسالة النتيجة
+                let result = '';
+                if (finalDice1 === 6 && finalDice2 === 6) {
+                    result = '🎉 يومك سيكون جيد وحظك جيد جداً! 🎉';
+                } else if (finalDice1 === 5 && finalDice2 === 5) {
+                    result = '⚡ حظك متوسط اليوم، يمكنك التقدم بحذر ⚡';
+                } else {
+                    result = '🍀 حظ أوفر المرة القادمة 🍀';
+                }
+                
+                setGameResult(result);
+                
+                // تحديد وقت اللعب التالي
+                const nextTime = getNextPlayTime(currentStage);
+                setNextPlayTime(nextTime);
+                
+                // تعيين مؤقت للسماح باللعب مرة أخرى
+                const waitTime = nextTime.getTime() - new Date().getTime();
+                setTimeout(() => {
+                    setCanPlay(true);
+                    setNextPlayTime(null);
+                }, waitTime);
+                
+            }, 2500);
+        };
+
+        // مكون التسجيل
+        const RegistrationForm = () => {
+            const [formData, setFormData] = useState({
+                name: '',
+                day: '',
+                month: '',
+                year: ''
+            });
+
+            const handleInputChange = (field, value) => {
+                setFormData(prev => ({...prev, [field]: value}));
+            };
+
+            const handleSubmit = () => {
+                const {name, day, month, year} = formData;
+                if (name && day && month && year) {
+                    registerPlayer(name, day, month, year);
+                }
+            };
+
+            return (
+                <div className="registration">
+                    <div className="card">
+                        <div className="logo-title">
+                            <h1>⭐ لعبة نرد الأبراج الذكية ⭐</h1>
+                            <p>اكتشف حظك اليوم من خلال برجك الفلكي</p>
+                        </div>
+                        
+                        <div>
+                            <div className="form-group">
+                                <label>الاسم الكامل</label>
+                                <input
+                                    type="text"
+                                    value={formData.name}
+                                    onChange={(e) => handleInputChange('name', e.target.value)}
+                                    placeholder="أدخل اسمك الكامل"
+                                />
+                            </div>
+                            
+                            <div className="date-inputs">
+                                <div className="form-group">
+                                    <label>اليوم</label>
+                                    <select
+                                        value={formData.month}
+                                        onChange={(e) => handleInputChange('month', e.target.value)}
+                                    >
+                                        <option value="">اختر الشهر</option>
+                                        {['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+                                          'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'].map((monthName, index) => (
+                                            <option key={index+1} value={index+1}>{monthName}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>السنة</label>
+                                    <select
+                                        value={formData.year}
+                                        onChange={(e) => handleInputChange('year', e.target.value)}
+                                    >
+                                        <option value="">اختر السنة</option>
+                                        {Array.from({length: 80}, (_, i) => (
+                                            <option key={2025-i} value={2025-i}>{2025-i}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div className="text-center">
+                                <button className="btn" onClick={handleSubmit}>
+                                    🚀 ابدأ اللعب واكتشف حظك
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        if (showRegistration) {
+            return React.createElement(RegistrationForm);
+        }
+
+        const luckLevel = calculateDailyLuck(player?.zodiacSign);
+        const stageNames = {
+            1: 'المرحلة الأولى - كل 5 دقائق',
+            2: 'المرحلة الثانية - كل ساعة',
+            3: 'المرحلة الثالثة - كل يوم',
+            4: 'المرحلة الرابعة - كل شهر'
+        };
+
+        return (
+            <div className="container">
+                {/* معلومات اللاعب والبرج */}
+                <div className="card">
+                    <div className="player-info">
+                        <h2>🌟 مرحباً {player?.name} 🌟</h2>
+                        <p>برج {player?.zodiacSign} | مستوى الحظ اليوم: <strong>{luckLevel}</strong></p>
+                    </div>
+                </div>
+
+                {/* اختيار المرحلة */}
+                <div className="card">
+                    <div className="text-center">
+                        <h3 style={{color: 'white', marginBottom: '25px', fontSize: '1.5em'}}>
+                            {stageNames[currentStage]}
+                        </h3>
+                        <div className="stage-selector">
+                            {[1, 2, 3, 4].map(stage => (
+                                <button
+                                    key={stage}
+                                    className={`stage-btn ${currentStage === stage ? 'active' : ''}`}
+                                    onClick={() => setCurrentStage(stage)}
+                                >
+                                    المرحلة {stage}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* منطقة النرد الرئيسية */}
+                <div className="card">
+                    <div className="text-center">
+                        <h3 style={{color: 'white', marginBottom: '30px', fontSize: '1.8em'}}>
+                            🎲 ارمِ النرد واكتشف حظك 🎲
+                        </h3>
+                        
+                        <div className="dice-container">
+                            <div 
+                                className={`dice dice-1 ${isRolling ? 'rolling' : ''}`}
+                                data-value={dice1}
+                                dangerouslySetInnerHTML={{
+                                    __html: Array.from({length: 9}, (_, i) => 
+                                        `<div class="dice-dot ${
+                                            (dice1 === 1 && i === 4) ||
+                                            (dice1 === 2 && (i === 2 || i === 6)) ||
+                                            (dice1 === 3 && (i === 2 || i === 4 || i === 6)) ||
+                                            (dice1 === 4 && (i === 0 || i === 2 || i === 6 || i === 8)) ||
+                                            (dice1 === 5 && (i === 0 || i === 2 || i === 4 || i === 6 || i === 8)) ||
+                                            (dice1 === 6 && (i === 0 || i === 1 || i === 2 || i === 6 || i === 7 || i === 8))
+                                            ? 'active' : ''
+                                        }"></div>`
+                                    ).join('')
+                                }}
+                            />
+                            <div 
+                                className={`dice dice-2 ${isRolling ? 'rolling' : ''}`}
+                                data-value={dice2}
+                                dangerouslySetInnerHTML={{
+                                    __html: Array.from({length: 9}, (_, i) => 
+                                        `<div class="dice-dot ${
+                                            (dice2 === 1 && i === 4) ||
+                                            (dice2 === 2 && (i === 2 || i === 6)) ||
+                                            (dice2 === 3 && (i === 2 || i === 4 || i === 6)) ||
+                                            (dice2 === 4 && (i === 0 || i === 2 || i === 6 || i === 8)) ||
+                                            (dice2 === 5 && (i === 0 || i === 2 || i === 4 || i === 6 || i === 8)) ||
+                                            (dice2 === 6 && (i === 0 || i === 1 || i === 2 || i === 6 || i === 7 || i === 8))
+                                            ? 'active' : ''
+                                        }"></div>`
+                                    ).join('')
+                                }}
+                            />
+                        </div>
+
+                        {gameResult && (
+                            <div className="result">
+                                {gameResult}
+                            </div>
+                        )}
+
+                        {canPlay ? (
+                            <button
+                                className="btn"
+                                onClick={rollDice}
+                                disabled={isRolling}
+                            >
+                                {isRolling ? '🎲 جاري الرمي...' : '🎯 ارمِ النرد الآن'}
+                            </button>
+                        ) : (
+                            <div style={{color: 'white', textAlign: 'center', padding: '20px'}}>
+                                <h4 style={{marginBottom: '15px'}}>⏰ الجولة التالية متاحة في:</h4>
+                                {nextPlayTime && (
+                                    <p style={{fontSize: '1.3em', fontWeight: 'bold', color: '#f39c12'}}>
+                                        {nextPlayTime.toLocaleString('en-GB', {
+                                            year: 'numeric',
+                                            month: '2-digit',
+                                            day: '2-digit',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            hour12: false
+                                        })}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* قواعد اللعبة */}
+                <div className="card">
+                    <h3 style={{color: 'white', marginBottom: '25px', textAlign: 'center', fontSize: '1.6em'}}>
+                        📜 قواعد اللعبة الفلكية
+                    </h3>
+                    <div style={{color: 'white', textAlign: 'center', fontSize: '1.1em', lineHeight: '2'}}>
+                        <p>✨ <strong>6-6:</strong> يومك سيكون جيد وحظك جيد جداً!</p>
+                        <p>⚡ <strong>5-5:</strong> حظك متوسط اليوم، يمكنك التقدم بحذر</p>
+                        <p>🍀 <strong>أي نتيجة أخرى:</strong> حظ أوفر في المرة القادمة</p>
+                        <p>🔮 <strong>مبدأ اللعبة:</strong> النتائج تعتمد على برجك الفلكي وحظك اليومي</p>
+                    </div>
+                </div>
+
+                {/* معلومات التواصل مع المصمم */}
+                <div className="footer">
+                    <div className="contact-info">
+                        <h4>💫 تواصل مع مصمم اللعبة</h4>
+                        <div className="contact-links">
+                            <a 
+                                href="https://instagram.com/haramy_net" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="contact-link instagram-link"
+                            >
+                                <span>📷</span>
+                                <span>@haramy_net</span>
+                            </a>
+                            <a 
+                                href="mailto:contact@haramy.net" 
+                                className="contact-link email-link"
+                            >
+                                <span>📧</span>
+                                <span>البريد الإلكتروني</span>
+                            </a>
+                        </div>
+                        <div className="designer-credit">
+                            ✨ تم تصميم وتطوير هذه اللعبة بواسطة فريق Haramy Network ✨
+                            <br/>
+                            🌟 لعبة نرد الأبراج الذكية - اكتشف حظك من خلال علم الفلك 🌟
+                            <br/>
+                            جميع الحقوق محفوظة © 2025
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    ReactDOM.render(React.createElement(ZodiacDiceGame), document.getElementById('root'));
+</script>
+```
+
+</body>
+</html>day}
+                                            onChange={(e) => handleInputChange('day', e.target.value)}
+                                        >
+                                            <option value="">اختر اليوم</option>
+                                            {Array.from({length: 31}, (_, i) => (
+                                                <option key={i+1} value={i+1}>{i+1}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+```
+                                <div className="form-group">
+                                    <label>الشهر</label>
+                                    <select
+                                        value={formData.
+```
